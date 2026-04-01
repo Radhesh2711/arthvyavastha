@@ -66,6 +66,7 @@ BANK_DETECT_PATTERNS: list[tuple[str, list[str]]] = [
     ("bank_of_america", [
         "bank of america",
         "bankofamerica.com",
+        "bankofamerica",
         "bofa",
     ]),
     ("wells_fargo", [
@@ -254,7 +255,7 @@ def parse_transactions_generic(
 
     def normalize_date(value: str) -> str:
         if value.count("/") == 1:
-            return f"{value}/00"
+            return f"{value}/26"
         return value
 
     def finalize() -> None:
