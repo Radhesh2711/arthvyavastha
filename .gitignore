@@ -1,0 +1,14 @@
+# Data (sensitive)
+dataset/
+processed_dataset/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Claude Code
+.claude/
+
+# macOS
+.DS_Store
