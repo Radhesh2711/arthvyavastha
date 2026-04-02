@@ -59,6 +59,25 @@
       "fuel",
       "gasoline",
       "petroleum",
+      "tesla supercharger",
+      "tesla chrg",
+      "tesla energy",
+      "tesla inc",
+      "tsl supercharger",
+      "supercharger",
+      "chargepoint",
+      "evgo",
+      "electrify america",
+      "blink charging",
+      "blink network",
+      "semaconnect",
+      "flo charging",
+      "ev charge",
+      "ev charging",
+      "electric vehicle charg",
+      "volta charging",
+      "greenlots",
+      "webasto charg",
       "geico",
       "state farm",
       "progressive ins",
@@ -437,17 +456,5 @@
       "bravo farms",
       "karya siddhi"
     ]
-  },
-  "grocery_store_aliases": {
-    "Walmart": ["walmart", "wal-mart"],
-    "Costco": ["costco"],
-    "Tom Thumb": ["tom thumb"],
-    "Braums": ["braums"],
-    "Patel Brothers": ["patel brothers", "patel bro"],
-    "India Bazaar": ["india bazaar"],
-    "Ralphs": ["ralphs"],
-    "Safeway": ["safeway"],
-    "Aldi's": ["aldi", "aldi's"],
-    "Kroger": ["kroger"]
   }
 }

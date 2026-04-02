@@ -69,6 +69,25 @@ DEFAULT_RULES = {
             "fuel",
             "gasoline",
             "petroleum",
+            "tesla supercharger",
+            "tesla chrg",
+            "tesla energy",
+            "tesla inc",
+            "tsl supercharger",
+            "supercharger",
+            "chargepoint",
+            "evgo",
+            "electrify america",
+            "blink charging",
+            "blink network",
+            "semaconnect",
+            "flo charging",
+            "ev charge",
+            "ev charging",
+            "electric vehicle charg",
+            "volta charging",
+            "greenlots",
+            "webasto charg",
             "geico",
             "state farm",
             "progressive ins",
@@ -448,18 +467,6 @@ DEFAULT_RULES = {
             "karya siddhi",
         ],
     },
-    "grocery_store_aliases": {
-        "Walmart": ["walmart", "wal-mart"],
-        "Costco": ["costco"],
-        "Tom Thumb": ["tom thumb"],
-        "Braums": ["braums"],
-        "Patel Brothers": ["patel brothers", "patel bro"],
-        "India Bazaar": ["india bazaar"],
-        "Ralphs": ["ralphs"],
-        "Safeway": ["safeway"],
-        "Aldi's": ["aldi", "aldi's"],
-        "Kroger": ["kroger"],
-    },
 }
 
 
@@ -478,9 +485,6 @@ def load_rules(config_path: Path) -> dict[str, object]:
             "special_misc_patterns", DEFAULT_RULES["special_misc_patterns"]
         ),
         "categories": loaded.get("categories", DEFAULT_RULES["categories"]),
-        "grocery_store_aliases": loaded.get(
-            "grocery_store_aliases", DEFAULT_RULES["grocery_store_aliases"]
-        ),
     }
 
     categories = rules["categories"]
@@ -491,29 +495,10 @@ def load_rules(config_path: Path) -> dict[str, object]:
     return rules
 
 
-def resolve_grocery_keywords(
-    rules: dict[str, object], selected_grocery_stores: list[str] | None
-) -> list[str]:
-    aliases = rules.get("grocery_store_aliases", {})
-    if not isinstance(aliases, dict):
-        return list(rules.get("categories", {}).get("grocery", []))
-
-    if selected_grocery_stores is None:
-        selected = list(aliases.keys())
-    else:
-        selected = selected_grocery_stores
-
-    resolved: list[str] = []
-    for store_name in selected:
-        keywords = aliases.get(store_name, [])
-        resolved.extend(str(k).lower() for k in keywords)
-    return resolved
-
 
 def classify_row(
     description: str,
     rules: dict[str, object],
-    selected_grocery_stores: list[str] | None = None,
 ) -> str | None:
     text = description.lower()
     ignore_patterns = [
@@ -524,7 +509,7 @@ def classify_row(
     ]
     categories = rules.get("categories", {})
     car_keywords = categories.get("car", [])
-    grocery_keywords = resolve_grocery_keywords(rules, selected_grocery_stores)
+    grocery_keywords = categories.get("grocery", [])
 
     if any(p.search(description) for p in ignore_patterns):
         return None
@@ -559,7 +544,6 @@ def segregate_csv(
     input_csv: Path,
     output_dir: Path,
     rules: dict[str, object],
-    selected_grocery_stores: list[str] | None = None,
 ) -> dict[str, int]:
     if not input_csv.exists():
         raise FileNotFoundError(f"Input CSV not found: {input_csv}")
@@ -590,7 +574,6 @@ def segregate_csv(
         category = classify_row(
             row.get("Description", ""),
             rules,
-            selected_grocery_stores=selected_grocery_stores,
         )
         if category is None:
             ignored_rows += 1
@@ -639,7 +622,6 @@ def process_single_pdf(
     output_root: Path,
     config_path: Path = Path("stores_config.json"),
     bank: str = "amex",
-    selected_grocery_stores: list[str] | None = None,
 ) -> dict[str, object]:
     rules = load_rules(config_path)
     per_pdf_dir = output_root / pdf_path.stem
@@ -650,7 +632,6 @@ def process_single_pdf(
         parsed_csv,
         per_pdf_dir,
         rules,
-        selected_grocery_stores=selected_grocery_stores,
     )
     return {
         "pdf_name": pdf_path.name,
@@ -693,26 +674,12 @@ def main() -> int:
         choices=BANK_CHOICES,
         help="Bank parser to use for all PDFs in this run",
     )
-    parser.add_argument(
-        "--grocery-stores",
-        type=str,
-        default="",
-        help=(
-            "Comma-separated grocery store display names to include for grocery mapping. "
-            "If omitted, all configured stores are used."
-        ),
-    )
     args = parser.parse_args()
 
     dataset_dir = args.dataset_dir
     output_root = args.output_root
     config_path = args.config
     bank = args.bank
-    selected_grocery_stores = (
-        [x.strip() for x in args.grocery_stores.split(",") if x.strip()]
-        if args.grocery_stores
-        else None
-    )
     if not dataset_dir.exists() or not dataset_dir.is_dir():
         raise FileNotFoundError(f"Dataset folder not found: {dataset_dir}")
 
@@ -726,7 +693,6 @@ def main() -> int:
             output_root,
             config_path,
             bank=bank,
-            selected_grocery_stores=selected_grocery_stores,
         )
 
         print(f"Processed: {pdf_path.name}")

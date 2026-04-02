@@ -6,7 +6,6 @@ from pathlib import Path
 import plotly.graph_objects as go
 import streamlit as st
 
-from expense_segregation import load_rules
 from expense_segregation import process_single_pdf
 from parse_new_charges import BANK_CHOICES
 from parse_new_charges import detect_bank
@@ -153,14 +152,6 @@ def main() -> None:
     )
 
     ensure_dirs()
-    rules = load_rules(Path("stores_config.json"))
-    grocery_store_options = list(rules.get("grocery_store_aliases", {}).keys())
-
-    selected_grocery_stores = st.multiselect(
-        "Grocery stores I usually visit",
-        options=grocery_store_options,
-        default=grocery_store_options,
-    )
 
     uploaded_files = st.file_uploader(
         "Upload statement PDFs", type=["pdf"], accept_multiple_files=True
@@ -168,12 +159,16 @@ def main() -> None:
     if not uploaded_files:
         return
 
-    # Save files, auto-detect banks
+    # Save files, auto-detect banks (deduplicate by name)
     pdf_paths: list[Path] = []
     detected_banks: dict[str, str] = {}
     undetected: list[str] = []
+    seen_names: set[str] = set()
 
     for uf in uploaded_files:
+        if uf.name in seen_names:
+            continue
+        seen_names.add(uf.name)
         pdf_path = DATASET_DIR / uf.name
         pdf_path.write_bytes(uf.getbuffer())
         pdf_paths.append(pdf_path)
@@ -215,7 +210,6 @@ def main() -> None:
                     OUTPUT_ROOT,
                     Path("stores_config.json"),
                     bank=file_banks[pdf_path.name],
-                    selected_grocery_stores=selected_grocery_stores,
                 )
                 results.append(result)
                 output_folders.append(Path(result["output_folder"]))
